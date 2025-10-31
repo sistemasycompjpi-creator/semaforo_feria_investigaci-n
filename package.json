@@ -1,5 +1,7 @@
 {
   "name": "semaforo",
+  "description": "Sistema de gestión de proyectos y asesores",
+  "author": "Joel Johs <jojohersa21@gmail.com>",
   "private": true,
   "version": "0.0.0",
   "type": "module",
