@@ -20,13 +20,6 @@ export const InstitutionalHeaderLarge = () => {
                             className="h-14 w-auto object-contain"
                         />
 
-                        {/* Logo 3 - ISC */}
-                        <img
-                            src="3-isc_logo.png"
-                            alt="ISC Logo"
-                            className="h-14 w-auto object-contain"
-                        />
-
                         {/* Logo 4 - JPI */}
                         <img
                             src="4-jpi_logo.png"

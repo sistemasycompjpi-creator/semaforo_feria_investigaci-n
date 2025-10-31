@@ -54,8 +54,8 @@ const Semaforo = () => {
 
     // Configuración de tiempos según modalidad
     const tiemposConfig = {
-        protocolo: { semaforo: [4, 2, 1], deliberacion: 7, limpieza: 3 },
-        informe: { semaforo: [7, 2, 1], deliberacion: 10, limpieza: 3 },
+        protocolo: { semaforo: [7, 2, 1], deliberacion: 7, limpieza: 3 },
+        informe: { semaforo: [7, 2, 1], deliberacion: 7, limpieza: 3 },
     };
 
     const getTiempos = () => {
