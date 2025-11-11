@@ -5,7 +5,7 @@ import { proyectosAPI } from "../backend/api/proyectos";
 import type { ProyectoConAsesores } from "../backend/schemas";
 import { useSemaforo } from "../contexts/SemaforoContext";
 
-type TimerPhase = 'idle' | 'green' | 'yellow' | 'red' | 'deliberacion' | 'limpieza' | 'finished';
+type TimerPhase = 'idle' | 'green' | 'yellow' | 'red' | 'deliberacion' | 'limpieza' | 'finished' | 'aviso';
 
 const Semaforo = () => {
     const { mode } = useParams();
@@ -135,11 +135,15 @@ const Semaforo = () => {
                             setCurrentPhase('red');
                             return (tiempos.semaforo[2]) * 60;
                         } else if (currentPhase === 'red') {
+                            setCurrentPhase('aviso');
+                            return 10;
+                        } else if (currentPhase === 'aviso') {
                             setCurrentPhase('deliberacion');
                             return (tiempos.deliberacion) * 60;
                         } else if (currentPhase === 'deliberacion') {
                             setCurrentPhase('limpieza');
-                            return (tiempos.limpieza) * 60;
+                            const newLimpiezaTime = (tiempos.limpieza * 60) - 10;
+                            return newLimpiezaTime > 0 ? newLimpiezaTime : 0;
                         } else if (currentPhase === 'limpieza') {
                             setCurrentPhase('finished');
                             setIsRunning(false);
@@ -166,11 +170,15 @@ const Semaforo = () => {
                 setCurrentPhase('red');
                 setTimeRemaining((tiempos.semaforo[2]) * 60);
             } else if (currentPhase === 'red') {
+                setCurrentPhase('aviso');
+                setTimeRemaining(10);
+            } else if (currentPhase === 'aviso') {
                 setCurrentPhase('deliberacion');
                 setTimeRemaining((tiempos.deliberacion) * 60);
             } else if (currentPhase === 'deliberacion') {
                 setCurrentPhase('limpieza');
-                setTimeRemaining((tiempos.limpieza) * 60);
+                const newLimpiezaTime = (tiempos.limpieza * 60) - 10;
+                setTimeRemaining(newLimpiezaTime > 0 ? newLimpiezaTime : 0);
             } else if (currentPhase === 'limpieza') {
                 setCurrentPhase('finished');
                 setIsRunning(false);
@@ -189,6 +197,7 @@ const Semaforo = () => {
         if (currentPhase === 'green') return 'green';
         if (currentPhase === 'yellow') return 'yellow';
         if (currentPhase === 'red') return 'red';
+        if (currentPhase === 'aviso') return 'cyan';
         if (currentPhase === 'deliberacion') return 'purple';
         if (currentPhase === 'limpieza') return 'blue';
         return 'gray';
@@ -199,6 +208,9 @@ const Semaforo = () => {
     const getPhaseTitle = () => {
         if (currentPhase === 'green' || currentPhase === 'yellow' || currentPhase === 'red') {
             return 'Presentación';
+        }
+        if (currentPhase === 'aviso') {
+            return 'Preguntas';
         }
         if (currentPhase === 'deliberacion') {
             return 'Deliberación';
@@ -311,6 +323,7 @@ const Semaforo = () => {
                             ${lightColor === 'green' ? 'shadow-[0_0_60px_rgba(34,197,94,0.8),0_0_100px_rgba(34,197,94,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
                             ${lightColor === 'yellow' ? 'shadow-[0_0_60px_rgba(234,179,8,0.8),0_0_100px_rgba(234,179,8,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
                             ${lightColor === 'red' ? 'shadow-[0_0_80px_rgba(239,68,68,1),0_0_120px_rgba(239,68,68,0.8),0_0_160px_rgba(239,68,68,0.6),inset_0_0_40px_rgba(255,255,255,0.4)] animate-pulse' : ''}
+                            ${lightColor === 'cyan' ? 'shadow-[0_0_60px_rgba(34,211,238,0.8),0_0_100px_rgba(34,211,238,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
                             ${lightColor === 'purple' ? 'shadow-[0_0_60px_rgba(168,85,247,0.8),0_0_100px_rgba(168,85,247,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
                             ${lightColor === 'blue' ? 'shadow-[0_0_60px_rgba(59,130,246,0.8),0_0_100px_rgba(59,130,246,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
                         `}>
@@ -318,6 +331,7 @@ const Semaforo = () => {
                                 ${lightColor === 'green' ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-600' : ''}
                                 ${lightColor === 'yellow' ? 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600' : ''}
                                 ${lightColor === 'red' ? 'bg-gradient-to-br from-red-400 via-red-500 to-red-600 animate-pulse' : ''}
+                                ${lightColor === 'cyan' ? 'bg-gradient-to-br from-cyan-400 via-cyan-500 to-cyan-600' : ''}
                                 ${lightColor === 'purple' ? 'bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600' : ''}
                                 ${lightColor === 'blue' ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600' : ''}
                                 ${lightColor === 'gray' ? 'bg-gray-800 shadow-inner' : ''}
@@ -355,6 +369,7 @@ const Semaforo = () => {
                             {currentPhase === 'green' && '🟢 Fase Verde - Tiempo Completo'}
                             {currentPhase === 'yellow' && '🟡 Fase Amarilla - Acelera'}
                             {currentPhase === 'red' && '🔴 Fase Roja - Finaliza Ya'}
+                            {currentPhase === 'aviso' && '⏱️ Inician las preguntas en 10 segundos...'}
                             {currentPhase === 'deliberacion' && '💭 Deliberación de Jurados'}
                             {currentPhase === 'limpieza' && '🧹 Limpieza del Área'}
                         </p>
