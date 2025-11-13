@@ -142,6 +142,20 @@ const Dashboard = () => {
                     </section>
                 </div>
             </main>
+            <footer className="bg-gray-900 text-white py-4">
+                <div className="max-w-7xl mx-auto text-center text-gray-400">
+                    <p>
+                        Desarrollado por{" "}
+                        <a
+                            href="https://github.com/joeljohs"
+                            target="_blank"
+                            className="text-purple-400 hover:text-purple-300"
+                        >
+                            Joel Johs
+                        </a>
+                    </p>
+                </div>
+            </footer>
         </div>
     );
 };

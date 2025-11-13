@@ -249,112 +249,127 @@ const Asesores = () => {
                     </div>
                 </div>
             </main>
-
-            {/* Modal para Agregar/Editar Asesor */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-2xl">
-                        {/* Modal Header */}
-                        <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-                            <h2 className="text-2xl font-bold">{editando ? 'Editar' : 'Nuevo'} Asesor</h2>
-                            <button
-                                onClick={cerrarModal}
-                                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                            >
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
-
-                        {/* Modal Body */}
-                        <div className="p-6 space-y-5">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Nombre del Asesor</label>
-                                <input
-                                    type="text"
-                                    placeholder="Ej: Dr. Juan García"
-                                    value={formData.nombre}
-                                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Tipo de Asesor</label>
-                                <select
-                                    value={formData.tipo}
-                                    onChange={(e) => setFormData({ ...formData, tipo: e.target.value as 'interno' | 'externo' })}
-                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                                >
-                                    <option value="">Selecciona el tipo</option>
-                                    <option value="interno">Interno</option>
-                                    <option value="externo">Externo</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="bg-gray-800 border-t border-gray-700 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
-                            <button
-                                onClick={cerrarModal}
-                                className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                className="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-cyan-500/20"
-                            >
-                                {editando ? 'Actualizar' : 'Guardar'} Asesor
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal de Confirmación de Importación */}
-            {showImportModal && importData && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-2xl">
-                        <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-                            <h2 className="text-2xl font-bold">Confirmar Importación</h2>
-                            <button
-                                onClick={() => setShowImportModal(false)}
-                                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                            >
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            <p>Se importarán {importData.data.length} asesores. ¿Desea continuar?</p>
-                            {importData.errors.length > 0 && (
-                                <div className="mt-4">
-                                    <p className="text-red-400">Se encontraron los siguientes errores:</p>
-                                    <ul className="list-disc list-inside text-red-400">
-                                        {importData.errors.map((error, index) => (
-                                            <li key={index}>{error}</li>
-                                        ))}
-                                    </ul>
+            
+                        {/* Modal para Agregar/Editar Asesor */}
+                        {showModal && (
+                            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                                <div className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-2xl">
+                                    {/* Modal Header */}
+                                    <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                                        <h2 className="text-2xl font-bold">{editando ? 'Editar' : 'Nuevo'} Asesor</h2>
+                                        <button
+                                            onClick={cerrarModal}
+                                            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                                        >
+                                            <X className="h-6 w-6" />
+                                        </button>
+                                    </div>
+            
+                                    {/* Modal Body */}
+                                    <div className="p-6 space-y-5">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Nombre del Asesor</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Ej: Dr. Juan García"
+                                                value={formData.nombre}
+                                                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 transition-colors"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Tipo de Asesor</label>
+                                            <select
+                                                value={formData.tipo}
+                                                onChange={(e) => setFormData({ ...formData, tipo: e.target.value as 'interno' | 'externo' })}
+                                                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                                            >
+                                                <option value="">Selecciona el tipo</option>
+                                                <option value="interno">Interno</option>
+                                                <option value="externo">Externo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+            
+                                    {/* Modal Footer */}
+                                    <div className="bg-gray-800 border-t border-gray-700 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
+                                        <button
+                                            onClick={cerrarModal}
+                                            className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={handleSubmit}
+                                            className="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-cyan-500/20"
+                                        >
+                                            {editando ? 'Actualizar' : 'Guardar'} Asesor
+                                        </button>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                        <div className="bg-gray-800 border-t border-gray-700 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
-                            <button
-                                onClick={() => setShowImportModal(false)}
-                                className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={confirmImport}
-                                className="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-cyan-500/20"
-                            >
-                                Confirmar
-                            </button>
-                        </div>
+                            </div>
+                        )}
+            
+                        {/* Modal de Confirmación de Importación */}
+                        {showImportModal && importData && (
+                            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                                <div className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-2xl">
+                                    <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                                        <h2 className="text-2xl font-bold">Confirmar Importación</h2>
+                                        <button
+                                            onClick={() => setShowImportModal(false)}
+                                            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                                        >
+                                            <X className="h-6 w-6" />
+                                        </button>
+                                    </div>
+                                    <div className="p-6">
+                                        <p>Se importarán {importData.data.length} asesores. ¿Desea continuar?</p>
+                                        {importData.errors.length > 0 && (
+                                            <div className="mt-4">
+                                                <p className="text-red-400">Se encontraron los siguientes errores:</p>
+                                                <ul className="list-disc list-inside text-red-400">
+                                                    {importData.errors.map((error, index) => (
+                                                        <li key={index}>{error}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="bg-gray-800 border-t border-gray-700 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
+                                        <button
+                                            onClick={() => setShowImportModal(false)}
+                                            className="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={confirmImport}
+                                            className="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-cyan-500/20"
+                                        >
+                                            Confirmar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <footer className="bg-gray-900 text-white py-4">
+                            <div className="max-w-7xl mx-auto text-center text-gray-400">
+                                <p>
+                                    Desarrollado por{" "}
+                                    <a
+                                        href="https://github.com/joeljohs"
+                                        target="_blank"
+                                        className="text-purple-400 hover:text-purple-300"
+                                    >
+                                        Joel Johs
+                                    </a>
+                                </p>
+                            </div>
+                        </footer>
                     </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-export default Asesores;
+                );
+            };
+            
+            export default Asesores;
+            

@@ -26,44 +26,9 @@
       "tipo": "interno"
     }
   ],
-  "proyectos": [
-    {
-      "id": 1,
-      "nombre": "Sistema de Gestión Escolar",
-      "lider": "Juan Pérez",
-      "noControlLider": "20401234",
-      "companero": "María López",
-      "noControlCompanero": "20401235",
-      "asesorInternoId": 1,
-      "asesorExternoId": 2,
-      "modalidad": "protocolo"
-    },
-    {
-      "id": 2,
-      "nombre": "App de Inventario",
-      "lider": "Carlos Ruiz",
-      "noControlLider": "20401236",
-      "companero": "Ana García",
-      "noControlCompanero": "20401237",
-      "asesorInternoId": 3,
-      "asesorExternoId": 4,
-      "modalidad": "informe"
-    },
-    {
-      "id": 3,
-      "nombre": "Plataforma E-learning",
-      "lider": "Luis Torres",
-      "noControlLider": "20401238",
-      "companero": "Sofia Morales",
-      "noControlCompanero": "20401239",
-      "asesorInternoId": 5,
-      "asesorExternoId": null,
-      "modalidad": "protocolo"
-    }
-  ],
+  "proyectos": [],
   "_metadata": {
     "lastAsesorId": 5,
-    "lastProyectoId": 3,
     "version": "1.0.0"
   }
 }

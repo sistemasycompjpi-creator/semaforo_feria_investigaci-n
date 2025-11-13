@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import InstitutionalHeader from "../components/InstitutionalHeader";
 import { proyectosAPI } from "../backend/api/proyectos";
 import { asesoresAPI } from "../backend/api/asesores";
-import type { Proyecto, ProyectoConAsesores, NuevoProyecto } from "../backend/schemas";
+import type { Proyecto, ProyectoConAsesores } from "../backend/schemas";
 import { exportProyectosCSV, importProyectosCSV, saveProyectos, readCSVFile } from "../backend/importExport";
 
 const Proyectos = () => {
@@ -16,7 +16,7 @@ const Proyectos = () => {
     const [busqueda, setBusqueda] = useState('');
     const [editando, setEditando] = useState<ProyectoConAsesores | null>(null);
     const [showAsesorForm, setShowAsesorForm] = useState({ interno: false, externo: false });
-    const [formData, setFormData] = useState<NuevoProyecto>({
+    const [formData, setFormData] = useState<Omit<Proyecto, 'id'>>({
         nombre: '',
         lider: '',
         noControlLider: '',
@@ -26,6 +26,7 @@ const Proyectos = () => {
         asesorExternoId: null,
         modalidad: 'protocolo'
     });
+    const [projectId, setProjectId] = useState('');
     const [nuevoAsesorInterno, setNuevoAsesorInterno] = useState('');
     const [nuevoAsesorExterno, setNuevoAsesorExterno] = useState('');
 
@@ -71,11 +72,20 @@ const Proyectos = () => {
                 setAsesoresExternos(asesoresAPI.getAll('externo'));
             }
 
-            const datosProyecto = { ...formData, asesorInternoId, asesorExternoId };
-
             if (editando) {
+                const datosProyecto = { ...formData, asesorInternoId, asesorExternoId };
                 proyectosAPI.update(editando.id, datosProyecto);
             } else {
+                if (!projectId.trim()) {
+                    alert('El ID del proyecto es obligatorio.');
+                    return;
+                }
+                const datosProyecto: Proyecto = { 
+                    id: projectId, 
+                    ...formData, 
+                    asesorInternoId, 
+                    asesorExternoId 
+                };
                 proyectosAPI.create(datosProyecto);
             }
 
@@ -86,7 +96,7 @@ const Proyectos = () => {
         }
     };
 
-    const handleEliminar = (id: number) => {
+    const handleEliminar = (id: string) => {
         if (confirm('¿Estás seguro de eliminar este proyecto?')) {
             try {
                 proyectosAPI.delete(id);
@@ -99,6 +109,7 @@ const Proyectos = () => {
 
     const abrirModalEditar = (proyecto: ProyectoConAsesores) => {
         setEditando(proyecto);
+        setProjectId(proyecto.id);
         setFormData({
             nombre: proyecto.nombre,
             lider: proyecto.lider,
@@ -115,6 +126,7 @@ const Proyectos = () => {
     const cerrarModal = () => {
         setShowModal(false);
         setEditando(null);
+        setProjectId('');
         setFormData({
             nombre: '',
             lider: '',
@@ -287,7 +299,7 @@ const Proyectos = () => {
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-300">{proyecto.asesorInterno?.nombre || 'N/A'}</td>
                                             <td className="px-6 py-4 text-sm text-gray-300">{proyecto.asesorExterno?.nombre || 'N/A'}</td>
-                                            <td className="px-6 py-4">
+.                                            <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${proyecto.modalidad === "protocolo"
                                                     ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                                                     : "bg-green-500/20 text-green-400 border border-green-500/30"
@@ -343,6 +355,18 @@ const Proyectos = () => {
                             <div>
                                 <h3 className="text-lg font-semibold mb-4 text-purple-400">Información del Proyecto</h3>
                                 <div className="space-y-4">
+                                    {!editando && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">ID del Proyecto</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Ej: 2025.3-001-BPA"
+                                                value={projectId}
+                                                onChange={(e) => setProjectId(e.target.value)}
+                                                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors"
+                                            />
+                                        </div>
+                                    )}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-300 mb-2">Nombre del Proyecto</label>
                                         <input
@@ -562,7 +586,7 @@ const Proyectos = () => {
                                             <li key={index}>{error}</li>
                                         ))}
                                     </ul>
-                                </div>
+.                                </div>
                             )}
                         </div>
                         <div className="bg-gray-800 border-t border-gray-700 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
@@ -582,6 +606,20 @@ const Proyectos = () => {
                     </div>
                 </div>
             )}
+            <footer className="bg-gray-900 text-white py-4">
+                <div className="max-w-7xl mx-auto text-center text-gray-400">
+                    <p>
+                        Desarrollado por{" "}
+                        <a
+                            href="https://github.com/joeljohs"
+                            target="_blank"
+                            className="text-purple-400 hover:text-purple-300"
+                        >
+                            Joel Johs
+                        </a>
+                    </p>
+                </div>
+            </footer>
         </div>
     );
 };

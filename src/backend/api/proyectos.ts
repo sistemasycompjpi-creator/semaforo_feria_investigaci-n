@@ -1,5 +1,5 @@
 import { getDatabase, saveDatabase } from '../database';
-import type { Proyecto, ProyectoConAsesores, NuevoProyecto } from '../schemas';
+import type { Proyecto, ProyectoConAsesores } from '../schemas';
 
 export const proyectosAPI = {
     // Obtener todos los proyectos con sus asesores
@@ -28,7 +28,7 @@ export const proyectosAPI = {
     },
 
     // Obtener un proyecto por ID
-    getById(id: number): ProyectoConAsesores | undefined {
+    getById(id: string): ProyectoConAsesores | undefined {
         const db = getDatabase();
         const proyecto = db.proyectos.find(p => p.id === id);
 
@@ -47,27 +47,18 @@ export const proyectosAPI = {
     },
 
     // Crear un nuevo proyecto
-    create(proyecto: NuevoProyecto): Proyecto {
+    create(proyecto: Proyecto): Proyecto {
         const db = getDatabase();
 
-        // Generar nuevo ID
-        const newId = db._metadata.lastProyectoId + 1;
-
-        const nuevoProyecto: Proyecto = {
-            id: newId,
-            ...proyecto
-        };
-
-        db.proyectos.push(nuevoProyecto);
-        db._metadata.lastProyectoId = newId;
+        db.proyectos.push(proyecto);
 
         saveDatabase(db);
 
-        return nuevoProyecto;
+        return proyecto;
     },
 
     // Actualizar un proyecto
-    update(id: number, proyecto: Partial<NuevoProyecto>): boolean {
+    update(id: string, proyecto: Partial<Proyecto>): boolean {
         const db = getDatabase();
         const index = db.proyectos.findIndex(p => p.id === id);
 
@@ -84,7 +75,7 @@ export const proyectosAPI = {
     },
 
     // Eliminar un proyecto
-    delete(id: number): boolean {
+    delete(id: string): boolean {
         const db = getDatabase();
         const index = db.proyectos.findIndex(p => p.id === id);
 

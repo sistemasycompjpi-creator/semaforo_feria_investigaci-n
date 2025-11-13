@@ -5,7 +5,7 @@ export interface Asesor {
 }
 
 export interface Proyecto {
-    id: number;
+    id: string;
     nombre: string;
     lider: string;
     noControlLider: string;
@@ -26,11 +26,9 @@ export interface Database {
     proyectos: Proyecto[];
     _metadata: {
         lastAsesorId: number;
-        lastProyectoId: number;
         version: string;
     };
 }
 
 // Tipos para creación (sin ID)
 export type NuevoAsesor = Omit<Asesor, 'id'>;
-export type NuevoProyecto = Omit<Proyecto, 'id'>;
