@@ -175,7 +175,16 @@ export function importProyectosCSV(csv: string): { data: Proyecto[]; errors: str
                 return;
             }
 
-            const id = parseInt(idStr);
+            const id = idStr.replace(/^"|"$/g, '').trim();
+            const idNumber = Number(id);
+            if (!id) {
+                errors.push(`Línea ${index + 2}: ID vacío`);
+                return;
+            }
+            if (Number.isNaN(idNumber)) {
+                errors.push(`Línea ${index + 2}: ID inválido "${idStr}"`);
+                return;
+            }
             const asesorInternoId = parseInt(asesorInternoIdStr);
             const asesorExternoId = asesorExternoIdStr ? parseInt(asesorExternoIdStr) : null;
 
@@ -222,8 +231,9 @@ export function saveProyectos(proyectos: Proyecto[]) {
             Object.assign(existente, proyecto);
         } else {
             db.proyectos.push(proyecto);
-            if (proyecto.id > db._metadata.lastProyectoId) {
-                db._metadata.lastProyectoId = proyecto.id;
+            const proyectoIdNumero = Number(proyecto.id);
+            if (!Number.isNaN(proyectoIdNumero) && proyectoIdNumero > db._metadata.lastProyectoId) {
+                db._metadata.lastProyectoId = proyectoIdNumero;
             }
         }
     });

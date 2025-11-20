@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { Clock, FileText, Settings, FolderKanban, GraduationCap } from "lucide-react";
 import InstitutionalHeader from "../components/InstitutionalHeader";
-import { useSemaforo } from "../contexts/SemaforoContext";
+import { useSemaforo } from "../contexts/useSemaforo";
 
 const Dashboard = () => {
     const { setShowCustomModal } = useSemaforo();

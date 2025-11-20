@@ -3,7 +3,7 @@ import { ArrowLeft, Play, Pause, RotateCcw, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { proyectosAPI } from "../backend/api/proyectos";
 import type { ProyectoConAsesores } from "../backend/schemas";
-import { useSemaforo } from "../contexts/SemaforoContext";
+import { useSemaforo } from "../contexts/useSemaforo";
 
 type TimerPhase = 'idle' | 'green' | 'yellow' | 'red' | 'preguntasRespuestas' | 'cambioEquipo' | 'finished' | 'aviso';
 

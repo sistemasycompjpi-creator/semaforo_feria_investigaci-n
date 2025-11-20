@@ -26,6 +26,7 @@ export interface Database {
     proyectos: Proyecto[];
     _metadata: {
         lastAsesorId: number;
+        lastProyectoId: number;
         version: string;
     };
 }
