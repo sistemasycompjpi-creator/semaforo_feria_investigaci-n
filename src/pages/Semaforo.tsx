@@ -5,7 +5,7 @@ import { proyectosAPI } from "../backend/api/proyectos";
 import type { ProyectoConAsesores } from "../backend/schemas";
 import { useSemaforo } from "../contexts/SemaforoContext";
 
-type TimerPhase = 'idle' | 'green' | 'yellow' | 'red' | 'deliberacion' | 'limpieza' | 'finished' | 'aviso';
+type TimerPhase = 'idle' | 'green' | 'yellow' | 'red' | 'preguntasRespuestas' | 'cambioEquipo' | 'finished' | 'aviso';
 
 const Semaforo = () => {
     const { mode } = useParams();
@@ -28,8 +28,8 @@ const Semaforo = () => {
         companero: string;
         noControlCompanero: string;
         semaforo: number[];
-        deliberacion: number;
-        limpieza: number;
+        preguntasRespuestas: number;
+        cambioEquipo: number;
     } | null>(null);
 
     // Estados del timer
@@ -48,14 +48,14 @@ const Semaforo = () => {
         verde: 5,
         amarillo: 2,
         rojo: 1,
-        deliberacion: 5,
-        limpieza: 3
+        preguntasRespuestas: 5,
+        cambioEquipo: 3
     });
 
     // Configuración de tiempos según modalidad
     const tiemposConfig = {
-        protocolo: { semaforo: [7, 2, 1], deliberacion: 6, limpieza: 4 },
-        informe: { semaforo: [7, 2, 1], deliberacion: 6, limpieza: 4 },
+        protocolo: { semaforo: [7, 2, 1], preguntasRespuestas: 6, cambioEquipo: 4 },
+        informe: { semaforo: [7, 2, 1], preguntasRespuestas: 6, cambioEquipo: 4 },
     };
 
     const getTiempos = () => {
@@ -138,13 +138,13 @@ const Semaforo = () => {
                             setCurrentPhase('aviso');
                             return 10;
                         } else if (currentPhase === 'aviso') {
-                            setCurrentPhase('deliberacion');
-                            return (tiempos.deliberacion) * 60;
-                        } else if (currentPhase === 'deliberacion') {
-                            setCurrentPhase('limpieza');
-                            const newLimpiezaTime = (tiempos.limpieza * 60) - 10;
-                            return newLimpiezaTime > 0 ? newLimpiezaTime : 0;
-                        } else if (currentPhase === 'limpieza') {
+                            setCurrentPhase('preguntasRespuestas');
+                            return (tiempos.preguntasRespuestas) * 60;
+                        } else if (currentPhase === 'preguntasRespuestas') {
+                            setCurrentPhase('cambioEquipo');
+                            const newCambioEquipoTime = (tiempos.cambioEquipo * 60) - 10;
+                            return newCambioEquipoTime > 0 ? newCambioEquipoTime : 0;
+                        } else if (currentPhase === 'cambioEquipo') {
                             setCurrentPhase('finished');
                             setIsRunning(false);
                             return 0;
@@ -173,13 +173,13 @@ const Semaforo = () => {
                 setCurrentPhase('aviso');
                 setTimeRemaining(10);
             } else if (currentPhase === 'aviso') {
-                setCurrentPhase('deliberacion');
-                setTimeRemaining((tiempos.deliberacion) * 60);
-            } else if (currentPhase === 'deliberacion') {
-                setCurrentPhase('limpieza');
-                const newLimpiezaTime = (tiempos.limpieza * 60) - 10;
-                setTimeRemaining(newLimpiezaTime > 0 ? newLimpiezaTime : 0);
-            } else if (currentPhase === 'limpieza') {
+                setCurrentPhase('preguntasRespuestas');
+                setTimeRemaining((tiempos.preguntasRespuestas) * 60);
+            } else if (currentPhase === 'preguntasRespuestas') {
+                setCurrentPhase('cambioEquipo');
+                const newCambioEquipoTime = (tiempos.cambioEquipo * 60) - 10;
+                setTimeRemaining(newCambioEquipoTime > 0 ? newCambioEquipoTime : 0);
+            } else if (currentPhase === 'cambioEquipo') {
                 setCurrentPhase('finished');
                 setIsRunning(false);
             }
@@ -198,8 +198,8 @@ const Semaforo = () => {
         if (currentPhase === 'yellow') return 'yellow';
         if (currentPhase === 'red') return 'red';
         if (currentPhase === 'aviso') return 'cyan';
-        if (currentPhase === 'deliberacion') return 'purple';
-        if (currentPhase === 'limpieza') return 'blue';
+        if (currentPhase === 'preguntasRespuestas') return 'purple';
+        if (currentPhase === 'cambioEquipo') return 'blue';
         return 'gray';
     };
 
@@ -212,11 +212,11 @@ const Semaforo = () => {
         if (currentPhase === 'aviso') {
             return 'Preguntas';
         }
-        if (currentPhase === 'deliberacion') {
-            return 'Deliberación';
+        if (currentPhase === 'preguntasRespuestas') {
+            return 'Preguntas y Respuestas';
         }
-        if (currentPhase === 'limpieza') {
-            return 'Limpieza del área';
+        if (currentPhase === 'cambioEquipo') {
+            return 'Cambio de equipo expositor';
         }
         return 'Semaforo';
     };
@@ -368,10 +368,10 @@ const Semaforo = () => {
                         <p className="text-xl font-bold text-white">
                             {currentPhase === 'green' && '🟢 Fase Verde - Tiempo Completo'}
                             {currentPhase === 'yellow' && '🟡 Fase Amarilla - Acelera'}
-                            {currentPhase === 'red' && '🔴 Fase Roja - Finaliza Ya'}
+                            {currentPhase === 'red' && '🔴 Tiempo por Finalizar'}
                             {currentPhase === 'aviso' && '⏱️ Inician las preguntas en 10 segundos...'}
-                            {currentPhase === 'deliberacion' && '💭 Deliberación de Jurados'}
-                            {currentPhase === 'limpieza' && '🧹 Limpieza del Área'}
+                            {currentPhase === 'preguntasRespuestas' && '💭 Preguntas y Respuestas'}
+                            {currentPhase === 'cambioEquipo' && '🧹 Cambio de Equipo Expositor'}
                         </p>
                     </div>
                 )}
@@ -543,27 +543,27 @@ const Semaforo = () => {
                                         </div>
                                     </div>
 
-                                    {/* Deliberación */}
+                                    {/* Preguntas y Respuestas */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">Deliberación</label>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">Preguntas y Respuestas</label>
                                         <input
                                             type="number"
                                             min="0"
-                                            value={customForm.deliberacion}
-                                            onChange={(e) => setCustomForm({ ...customForm, deliberacion: parseInt(e.target.value) || 0 })}
+                                            value={customForm.preguntasRespuestas}
+                                            onChange={(e) => setCustomForm({ ...customForm, preguntasRespuestas: parseInt(e.target.value) || 0 })}
                                             placeholder="5"
                                             className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-yellow-500 transition-colors"
                                         />
                                     </div>
 
-                                    {/* Limpieza */}
+                                    {/* Cambio de Equipo Expositor */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">Limpieza de Área</label>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">Cambio de Equipo Expositor</label>
                                         <input
                                             type="number"
                                             min="0"
-                                            value={customForm.limpieza}
-                                            onChange={(e) => setCustomForm({ ...customForm, limpieza: parseInt(e.target.value) || 0 })}
+                                            value={customForm.cambioEquipo}
+                                            onChange={(e) => setCustomForm({ ...customForm, cambioEquipo: parseInt(e.target.value) || 0 })}
                                             placeholder="3"
                                             className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-yellow-500 transition-colors"
                                         />
@@ -589,8 +589,8 @@ const Semaforo = () => {
                                         companero: customForm.companero || "Participante 2",
                                         noControlCompanero: customForm.noControlCompanero || "00000000",
                                         semaforo: [customForm.verde, customForm.amarillo, customForm.rojo],
-                                        deliberacion: customForm.deliberacion,
-                                        limpieza: customForm.limpieza
+                                        preguntasRespuestas: customForm.preguntasRespuestas,
+                                        cambioEquipo: customForm.cambioEquipo
                                     });
                                     setShowCustomModal(false);
                                 }}
