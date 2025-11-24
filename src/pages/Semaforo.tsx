@@ -6,6 +6,17 @@ import type { ProyectoConAsesores } from "../backend/schemas";
 import { useSemaforo } from "../contexts/useSemaforo";
 
 type TimerPhase = 'idle' | 'green' | 'yellow' | 'red' | 'preguntasRespuestas' | 'cambioEquipo' | 'finished' | 'aviso';
+type LightColor = 'green' | 'yellow' | 'red' | 'cyan' | 'purple' | 'blue' | 'gray';
+
+const circleColorClasses: Record<LightColor, string> = {
+    green: 'bg-gradient-to-br from-green-500 to-green-600 shadow-[0_0_90px_rgba(34,197,94,0.7)]',
+    yellow: 'bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-[0_0_90px_rgba(234,179,8,0.7)]',
+    red: 'bg-gradient-to-br from-red-500 to-red-600 shadow-[0_0_100px_rgba(239,68,68,0.85)]',
+    cyan: 'bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-[0_0_80px_rgba(34,211,238,0.7)]',
+    purple: 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-[0_0_80px_rgba(168,85,247,0.7)]',
+    blue: 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-[0_0_80px_rgba(59,130,246,0.7)]',
+    gray: 'bg-gray-700 shadow-[0_0_80px_rgba(15,23,42,0.9)]',
+};
 
 const Semaforo = () => {
     const { mode } = useParams();
@@ -67,25 +78,113 @@ const Semaforo = () => {
 
     const tiempos = getTiempos();
 
-    // Función para reproducir sonido
-    const playSound = () => {
+    const getPhaseBadgeLabel = () => {
+        switch (currentPhase) {
+            case 'green':
+                return 'Fase verde';
+            case 'yellow':
+                return 'Fase amarilla';
+            case 'red':
+                return 'Fase roja';
+            case 'aviso':
+                return 'Aviso';
+            case 'preguntasRespuestas':
+                return 'Preguntas';
+            case 'cambioEquipo':
+                return 'Cambio de equipo';
+            case 'finished':
+                return 'Presentación finalizada';
+            default:
+                return 'Listo';
+        }
+    };
+
+    const getPhaseTitle = () => {
+        switch (currentPhase) {
+            case 'green':
+                return '🟢 Presentación - fase verde';
+            case 'yellow':
+                return '🟡 Presentación - fase amarilla';
+            case 'red':
+                return '🔴 Presentación - fase roja';
+            case 'aviso':
+                return '⏱️ Aviso de preguntas';
+            case 'preguntasRespuestas':
+                return '💭 Preguntas y respuestas';
+            case 'cambioEquipo':
+                return '🧹 Cambio de equipo expositor';
+            case 'finished':
+                return '✅ Presentación finalizada';
+            default:
+                return '⏱️ Listo';
+        }
+    };
+
+    const phaseBadgeLabel = getPhaseBadgeLabel();
+    const phaseTitle = getPhaseTitle();
+
+    const lightColor: LightColor =
+        currentPhase === 'green' ? 'green'
+            : currentPhase === 'yellow' ? 'yellow'
+                : currentPhase === 'red' ? 'red'
+                    : currentPhase === 'aviso' ? 'cyan'
+                        : currentPhase === 'preguntasRespuestas' ? 'purple'
+                            : currentPhase === 'cambioEquipo' ? 'blue'
+                                : currentPhase === 'finished' ? 'gray'
+                                    : 'gray';
+
+    const circleColorClass = circleColorClasses[lightColor];
+
+    const playSound = (type: 'change' | 'finish') => {
         try {
-            const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+            const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
             const context = new AudioContextClass();
+
+            // Main Oscillator (más agudo)
             const oscillator = context.createOscillator();
             const gainNode = context.createGain();
-
             oscillator.connect(gainNode);
             gainNode.connect(context.destination);
+            oscillator.frequency.value = type === 'finish' ? 900 : 600;
+            oscillator.type = 'triangle';
 
-            oscillator.frequency.value = 800;
-            oscillator.type = "sine";
+            // Sub Oscillator (más grave, para dar cuerpo)
+            const subOscillator = context.createOscillator();
+            const subGainNode = context.createGain();
+            subOscillator.connect(subGainNode);
+            subGainNode.connect(context.destination);
+            subOscillator.frequency.value = type === 'finish' ? 450 : 300;
+            subOscillator.type = 'sine';
 
-            gainNode.gain.setValueAtTime(0.3, context.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
+            const now = context.currentTime;
 
-            oscillator.start(context.currentTime);
-            oscillator.stop(context.currentTime + 0.5);
+            if (type === 'finish') {
+                // Sonido de finalización (más largo y melódico)
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(0.4, now + 0.05);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+
+                subGainNode.gain.setValueAtTime(0, now);
+                subGainNode.gain.linearRampToValueAtTime(0.3, now + 0.05);
+                subGainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+
+                oscillator.start(now);
+                subOscillator.start(now);
+                oscillator.stop(now + 0.5);
+                subOscillator.stop(now + 0.5);
+            } else {
+                // Sonido de cambio (corto y nítido)
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+                subGainNode.gain.setValueAtTime(0.4, now);
+                subGainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+                oscillator.start(now);
+                subOscillator.start(now);
+                oscillator.stop(now + 0.2);
+                subOscillator.stop(now + 0.2);
+            }
         } catch {
             console.log("Audio not supported");
         }
@@ -119,14 +218,13 @@ const Semaforo = () => {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    // useEffect para manejar el countdown
     useEffect(() => {
         if (isRunning && timeRemaining > 0) {
             intervalRef.current = setInterval(() => {
                 setTimeRemaining(prev => {
                     if (prev <= 1) {
                         // Tiempo terminado, cambiar de fase
-                        playSound();
+                        playSound('finish');
 
                         if (currentPhase === 'green') {
                             setCurrentPhase('yellow');
@@ -166,22 +264,28 @@ const Semaforo = () => {
             if (currentPhase === 'green') {
                 setCurrentPhase('yellow');
                 setTimeRemaining((tiempos.semaforo[1]) * 60);
+                playSound('change');
             } else if (currentPhase === 'yellow') {
                 setCurrentPhase('red');
                 setTimeRemaining((tiempos.semaforo[2]) * 60);
+                playSound('change');
             } else if (currentPhase === 'red') {
                 setCurrentPhase('aviso');
                 setTimeRemaining(10);
+                playSound('change');
             } else if (currentPhase === 'aviso') {
                 setCurrentPhase('preguntasRespuestas');
                 setTimeRemaining((tiempos.preguntasRespuestas) * 60);
+                playSound('change');
             } else if (currentPhase === 'preguntasRespuestas') {
                 setCurrentPhase('cambioEquipo');
                 const newCambioEquipoTime = (tiempos.cambioEquipo * 60) - 10;
                 setTimeRemaining(newCambioEquipoTime > 0 ? newCambioEquipoTime : 0);
+                playSound('change');
             } else if (currentPhase === 'cambioEquipo') {
                 setCurrentPhase('finished');
                 setIsRunning(false);
+                playSound('finish');
             }
         }
 
@@ -192,200 +296,97 @@ const Semaforo = () => {
         };
     }, [isRunning, timeRemaining, currentPhase, tiempos]);
 
-    // Determinar el color activo del semáforo
-    const getLightColor = () => {
-        if (currentPhase === 'green') return 'green';
-        if (currentPhase === 'yellow') return 'yellow';
-        if (currentPhase === 'red') return 'red';
-        if (currentPhase === 'aviso') return 'cyan';
-        if (currentPhase === 'preguntasRespuestas') return 'purple';
-        if (currentPhase === 'cambioEquipo') return 'blue';
-        return 'gray';
-    };
-
-    const lightColor = getLightColor();
-
-    const getPhaseTitle = () => {
-        if (currentPhase === 'green' || currentPhase === 'yellow' || currentPhase === 'red') {
-            return 'Presentación';
-        }
-        if (currentPhase === 'aviso') {
-            return 'Preguntas';
-        }
-        if (currentPhase === 'preguntasRespuestas') {
-            return 'Preguntas y Respuestas';
-        }
-        if (currentPhase === 'cambioEquipo') {
-            return 'Cambio de equipo expositor';
-        }
-        return 'Semaforo';
-    };
-
     return (
         <div className="bg-gray-900 text-white min-h-screen flex flex-col">
-            {/* Header con botón volver */}
-            <div className="p-2 border-b border-gray-800 flex items-center justify-between">
-                <Link
-                    to="/"
-                    className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-800"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="text-sm">Volver</span>
+            <header className="p-3 border-b border-gray-800 flex items-center justify-between">
+                <Link to="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-gray-800">
+                    <ArrowLeft className="h-5 w-5" />
+                    <span className="text-base">Volver</span>
                 </Link>
-
-                {/* Botón para cambiar proyecto */}
                 {mode !== "custom" && (selectedProject || customData) && (
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-800 border border-blue-500/30 text-sm"
-                    >
+                    <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors px-4 py-2 rounded-lg hover:bg-gray-800 border border-blue-500/30 text-base">
                         Cambiar Proyecto
                     </button>
                 )}
-            </div>
+            </header>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col p-4 gap-4">
-                {/* Contenido Principal: Información + Semáforo */}
-                <div className="flex-1 grid grid-cols-2 gap-4">
-                    {/* Sección Izquierda: Información del Proyecto (1/2) */}
-                    <div className="col-span-1 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 flex flex-col justify-center">
-                        {(selectedProject || customData) ? (
-                            <div className="space-y-4">
-                                {/* Modalidad */}
-                                <div className="text-right">
-                                    <span className={`inline-block px-3 py-1.5 rounded-lg font-semibold text-base ${mode === "protocolo"
-                                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                                        : mode === "informe"
-                                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                            : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                                        }`}>
-                                        {mode === "protocolo" ? "Protocolo" : mode === "informe" ? "Informe" : "Personalizado"}
-                                    </span>
-                                </div>
-
-                                {/* ID y Título del Proyecto */}
-                                <div className="text-center">
-                                    <p className="text-3xl font-bold text-white mb-1">{mode === "custom" ? "" : selectedProject?.id}</p>
-                                    <h3 className="text-2xl text-gray-400 mb-1">
-                                        {mode === "custom" ? customData?.tema : selectedProject?.nombre}
-                                    </h3>
-                                </div>
-
-                                {/* Participantes */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-gray-700/30 rounded-lg p-3">
-                                        <p className="text-xs text-gray-400 mb-1">Participante Líder</p>
-                                        <p className="text-base font-semibold text-white">
-                                            {mode === "custom" ? customData?.lider : selectedProject?.lider}
-                                        </p>
-                                        <p className="text-sm text-gray-400">
-                                            {mode === "custom" ? customData?.noControlLider : selectedProject?.noControlLider}
-                                        </p>
-                                    </div>
-                                    <div className="bg-gray-700/30 rounded-lg p-3">
-                                        <p className="text-xs text-gray-400 mb-1">Participante Compañero</p>
-                                        <p className="text-base font-semibold text-white">
-                                            {mode === "custom" ? customData?.companero : selectedProject?.companero}
-                                        </p>
-                                        <p className="text-sm text-gray-400">
-                                            {mode === "custom" ? customData?.noControlCompanero : selectedProject?.noControlCompanero}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Asesores */}
-                                {mode !== "custom" && (
-                                    <div className="space-y-2">
-                                        <div className="bg-gray-700/30 rounded-lg p-3">
-                                            <p className="text-xs text-gray-400 mb-1">Asesor Interno</p>
-                                            <p className="text-sm font-medium text-white">{selectedProject?.asesorInterno?.nombre}</p>
-                                        </div>
-                                        {selectedProject?.asesorExterno && (
-                                            <div className="bg-gray-700/30 rounded-lg p-3">
-                                                <p className="text-xs text-gray-400 mb-1">Asesor Externo</p>
-                                                <p className="text-sm font-medium text-white">{selectedProject?.asesorExterno?.nombre}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+            <main className="flex-1 flex flex-col items-center justify-center p-4 text-center gap-6">
+                {(selectedProject || customData) ? (
+                    <div className="w-full space-y-5">
+                        <div className="flex flex-col items-center gap-1">
+                            <span className="text-xs uppercase tracking-[0.5em] text-cyan-300">Proyecto activo</span>
+                            <h1 className="text-4xl sm:text-5xl font-black text-white text-center">
+                                {mode === "custom"
+                                    ? "Personalizado"
+                                    : `${selectedProject?.id ?? "BPA-000"} - ${selectedProject?.nombre ?? "Proyecto"}`}
+                            </h1>
+                            <p className="text-sm text-gray-400 uppercase tracking-[0.4em]">
+                                {mode === "custom" ? customData?.tema?.toUpperCase() ?? "TEMA PERSONALIZADO" : ""}
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="bg-white/10 border border-white/20 rounded-2xl p-5 shadow-lg shadow-cyan-900/40">
+                                <p className="text-xs uppercase tracking-wide text-cyan-200">Líder</p>
+                                <p className="text-2xl font-semibold text-white mt-2">{mode === "custom" ? customData?.lider || "Participante 1" : selectedProject?.lider}</p>
+                                <p className="text-sm text-cyan-100 mt-1">{mode === "custom" ? customData?.noControlLider || "00000000" : selectedProject?.noControlLider}</p>
                             </div>
-                        ) : (
-                            <div className="flex items-center justify-center h-full">
-                                <p className="text-gray-500 text-lg">Selecciona un proyecto para comenzar</p>
+                            <div className="bg-white/10 border border-white/20 rounded-2xl p-5 shadow-lg shadow-purple-900/40">
+                                <p className="text-xs uppercase tracking-wide text-purple-200">Compañero</p>
+                                <p className="text-2xl font-semibold text-white mt-2">{mode === "custom" ? customData?.companero || "Participante 2" : selectedProject?.companero}</p>
+                                <p className="text-sm text-purple-100 mt-1">{mode === "custom" ? customData?.noControlCompanero || "00000000" : selectedProject?.noControlCompanero}</p>
                             </div>
-                        )}
+                        </div>
                     </div>
+                ) : (
+                    <div className="w-full">
+                        <p className="text-gray-400">Selecciona un proyecto para iniciar el cronómetro y mostrar los datos.</p>
+                    </div>
+                )}
 
-                    {/* Sección Derecha: Semáforo NEÓN (1/2) */}
-                    <div className="col-span-1 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4 flex items-center justify-center">
-                        <div className={`relative w-96 h-96 rounded-full bg-black border-4 border-gray-700 flex items-center justify-center overflow-hidden transition-all duration-500 
-                            ${lightColor === 'green' ? 'shadow-[0_0_60px_rgba(34,197,94,0.8),0_0_100px_rgba(34,197,94,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
-                            ${lightColor === 'yellow' ? 'shadow-[0_0_60px_rgba(234,179,8,0.8),0_0_100px_rgba(234,179,8,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
-                            ${lightColor === 'red' ? 'shadow-[0_0_80px_rgba(239,68,68,1),0_0_120px_rgba(239,68,68,0.8),0_0_160px_rgba(239,68,68,0.6),inset_0_0_40px_rgba(255,255,255,0.4)] animate-pulse' : ''}
-                            ${lightColor === 'cyan' ? 'shadow-[0_0_60px_rgba(34,211,238,0.8),0_0_100px_rgba(34,211,238,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
-                            ${lightColor === 'purple' ? 'shadow-[0_0_60px_rgba(168,85,247,0.8),0_0_100px_rgba(168,85,247,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
-                            ${lightColor === 'blue' ? 'shadow-[0_0_60px_rgba(59,130,246,0.8),0_0_100px_rgba(59,130,246,0.5),inset_0_0_30px_rgba(255,255,255,0.3)]' : ''}
-                        `}>
-                            <div className={`w-88 h-88 rounded-full transition-all duration-500 
-                                ${lightColor === 'green' ? 'bg-gradient-to-br from-green-400 via-green-500 to-green-600' : ''}
-                                ${lightColor === 'yellow' ? 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600' : ''}
-                                ${lightColor === 'red' ? 'bg-gradient-to-br from-red-400 via-red-500 to-red-600 animate-pulse' : ''}
-                                ${lightColor === 'cyan' ? 'bg-gradient-to-br from-cyan-400 via-cyan-500 to-cyan-600' : ''}
-                                ${lightColor === 'purple' ? 'bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600' : ''}
-                                ${lightColor === 'blue' ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600' : ''}
-                                ${lightColor === 'gray' ? 'bg-gray-800 shadow-inner' : ''}
-                            `}></div>
+                <div className="flex flex-col items-center gap-5">
+                    <div className="relative">
+                        <div className={`w-72 h-72 sm:w-80 sm:h-80 rounded-full border-8 border-white/10 transition-all duration-500 ${circleColorClass}`}></div>
+                        <div className="absolute top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-semibold tracking-[0.5em] uppercase text-white bg-black/60 border border-white/30">
+                            {phaseBadgeLabel}
+                        </div>
+                    </div>
+                    <div className="w-full max-w-xs">
+                        <div className="bg-black/70 border border-white/20 rounded-2xl px-8 py-6 shadow-2xl shadow-black/60">
+                            <p className="text-6xl sm:text-7xl font-mono font-bold tracking-tight text-white">
+                                {formatTime(timeRemaining)}
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                {/* Footer: Timers y Botones de Control */}
-                <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
-                    <div className="flex items-center justify-between gap-4">
-                        {/* Timer */}
-                        <div className="flex-1 text-center">
-                            <p className="text-lg text-gray-400 mb-1">{getPhaseTitle()}</p>
-                            <p className="text-6xl font-bold">{formatTime(timeRemaining)}</p>
-                        </div>
-
-                        {/* Controles */}
-                        <div className="flex items-center gap-2">
-                            <button onClick={isRunning ? pauseTimer : startTimer} className={`px-6 py-3 rounded-lg font-bold text-lg transition-all shadow-lg flex items-center gap-2 ${isRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}`}>
-                                {isRunning ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
-                                {isRunning ? 'Pausar' : 'Iniciar'}
-                            </button>
-                            <button onClick={restartTimer} className="p-4 rounded-lg bg-red-500 hover:bg-red-600 transition-all shadow-lg">
-                                <RotateCcw className="h-6 w-6" />
-                            </button>
-                        </div>
-                    </div>
+                <div className="mt-6 flex items-center gap-4">
+                    <button onClick={isRunning ? pauseTimer : startTimer} className={`px-10 py-4 rounded-full font-bold text-2xl transition-all shadow-lg flex items-center gap-3
+                        ${isRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}
+                        ${!selectedProject && !customData ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                        disabled={!selectedProject && !customData}
+                    >
+                        {isRunning ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+                        {isRunning ? 'Pausar' : 'Iniciar'}
+                    </button>
+                    <button onClick={restartTimer} className="p-5 rounded-full bg-red-500 hover:bg-red-600 transition-all shadow-lg">
+                        <RotateCcw className="h-8 w-8" />
+                    </button>
                 </div>
 
-                {/* Mensaje de fase actual */}
                 {currentPhase !== 'idle' && currentPhase !== 'finished' && (
-                    <div className="text-center">
+                    <div className="text-center mt-4">
                         <p className="text-xl font-bold text-white">
-                            {currentPhase === 'green' && '🟢 Fase Verde - Tiempo Completo'}
-                            {currentPhase === 'yellow' && '🟡 Fase Amarilla - Acelera'}
-                            {currentPhase === 'red' && '🔴 Tiempo por Finalizar'}
-                            {currentPhase === 'aviso' && '⏱️ Inician las preguntas en 10 segundos...'}
-                            {currentPhase === 'preguntasRespuestas' && '💭 Preguntas y Respuestas'}
-                            {currentPhase === 'cambioEquipo' && '🧹 Cambio de Equipo Expositor'}
+                            {phaseTitle}
+                            {currentPhase === 'green' && ` (${tiempos.semaforo[0]} min)`}
+                            {currentPhase === 'yellow' && ` (${tiempos.semaforo[1]} min)`}
+                            {currentPhase === 'red' && ` (${tiempos.semaforo[2]} min)`}
                         </p>
                     </div>
                 )}
+            </main>
 
-                {currentPhase === 'finished' && (
-                    <div className="text-center">
-                        <p className="text-3xl font-bold text-green-400 animate-pulse">
-                            ✅ ¡Presentación Finalizada!
-                        </p>
-                    </div>
-                )}
-            </div>
-
-            {/* Modal: Selección de Proyecto (Protocolo/Informe) */}
+            {/* Modals */}
             {(showModal && mode !== 'custom') && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto">
@@ -431,8 +432,6 @@ const Semaforo = () => {
                     </div>
                 </div>
             )}
-
-            {/* Modal: Configuración Custom */}
             {showCustomModal && mode === "custom" && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -618,6 +617,7 @@ const Semaforo = () => {
             </footer>
         </div>
     );
-}
+
+};
 
 export default Semaforo;
