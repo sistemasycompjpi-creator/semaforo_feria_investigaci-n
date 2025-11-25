@@ -78,6 +78,12 @@ const Semaforo = () => {
 
     const tiempos = getTiempos();
 
+    const titleText = mode === "custom"
+        ? (customData?.tema || "Personalizado")
+        : `${selectedProject?.id ?? "BPA-000"} - ${selectedProject?.nombre ?? "Proyecto"}`;
+
+    const titleFontSizeClass = titleText.length < 60 ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl";
+
     const getPhaseBadgeLabel = () => {
         switch (currentPhase) {
             case 'green':
@@ -310,31 +316,17 @@ const Semaforo = () => {
                 )}
             </header>
 
-            <main className="flex-1 flex flex-col items-center justify-center p-4 text-center gap-6">
+            <main className="flex-1 flex flex-col items-center justify-between p-4 text-center gap-6 w-full mx-auto">
                 {(selectedProject || customData) ? (
                     <div className="w-full space-y-5">
-                        <div className="flex flex-col items-center gap-1">
+                        <div className="flex flex-col gap-1">
                             <span className="text-xs uppercase tracking-[0.5em] text-cyan-300">Proyecto activo</span>
-                            <h1 className="text-4xl sm:text-5xl font-black text-white text-center">
-                                {mode === "custom"
-                                    ? "Personalizado"
-                                    : `${selectedProject?.id ?? "BPA-000"} - ${selectedProject?.nombre ?? "Proyecto"}`}
+                            <h1 className={`${titleFontSizeClass} font-black text-white text-center break-words w-full`}>
+                                {titleText}
                             </h1>
-                            <p className="text-sm text-gray-400 uppercase tracking-[0.4em]">
+                            <p className="text-sm text-gray-400 uppercase tracking-[0.3em]">
                                 {mode === "custom" ? customData?.tema?.toUpperCase() ?? "TEMA PERSONALIZADO" : ""}
                             </p>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="bg-white/10 border border-white/20 rounded-2xl p-5 shadow-lg shadow-cyan-900/40">
-                                <p className="text-xs uppercase tracking-wide text-cyan-200">Líder</p>
-                                <p className="text-2xl font-semibold text-white mt-2">{mode === "custom" ? customData?.lider || "Participante 1" : selectedProject?.lider}</p>
-                                <p className="text-sm text-cyan-100 mt-1">{mode === "custom" ? customData?.noControlLider || "00000000" : selectedProject?.noControlLider}</p>
-                            </div>
-                            <div className="bg-white/10 border border-white/20 rounded-2xl p-5 shadow-lg shadow-purple-900/40">
-                                <p className="text-xs uppercase tracking-wide text-purple-200">Compañero</p>
-                                <p className="text-2xl font-semibold text-white mt-2">{mode === "custom" ? customData?.companero || "Participante 2" : selectedProject?.companero}</p>
-                                <p className="text-sm text-purple-100 mt-1">{mode === "custom" ? customData?.noControlCompanero || "00000000" : selectedProject?.noControlCompanero}</p>
-                            </div>
                         </div>
                     </div>
                 ) : (
@@ -359,19 +351,39 @@ const Semaforo = () => {
                     </div>
                 </div>
 
-                <div className="mt-6 flex items-center gap-4">
-                    <button onClick={isRunning ? pauseTimer : startTimer} className={`px-10 py-4 rounded-full font-bold text-2xl transition-all shadow-lg flex items-center gap-3
-                        ${isRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}
-                        ${!selectedProject && !customData ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                        disabled={!selectedProject && !customData}
-                    >
-                        {isRunning ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
-                        {isRunning ? 'Pausar' : 'Iniciar'}
-                    </button>
-                    <button onClick={restartTimer} className="p-5 rounded-full bg-red-500 hover:bg-red-600 transition-all shadow-lg">
-                        <RotateCcw className="h-8 w-8" />
-                    </button>
+                <div className="w-full flex items-center justify-around gap-4 mt-6">
+                    <div className="w-96">
+                        {(selectedProject || customData) &&
+                            <div className="bg-white/10 border border-white/20 rounded-2xl p-4 shadow-lg shadow-cyan-900/40 text-left">
+                                <p className="text-xs uppercase tracking-wide text-cyan-200">Líder</p>
+                                <p className="text-xl font-semibold text-white mt-1 break-words">{mode === "custom" ? customData?.lider || "Participante 1" : selectedProject?.lider}</p>
+                                <p className="text-sm text-cyan-100 mt-1">{mode === "custom" ? customData?.noControlLider || "00000000" : selectedProject?.noControlLider}</p>
+                            </div>
+                        }
+                    </div>
+                    <div className="flex justify-center gap-4">
+                         <button onClick={isRunning ? pauseTimer : startTimer} className={`px-10 py-4 rounded-full font-bold text-2xl transition-all shadow-lg flex items-center gap-3
+                            ${isRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}
+                            ${!selectedProject && !customData ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
+                            disabled={!selectedProject && !customData}
+                        >
+                            {isRunning ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+                            {isRunning ? 'Pausar' : 'Iniciar'}
+                        </button>
+                        <button onClick={restartTimer} className="p-5 rounded-full bg-red-500 hover:bg-red-600 transition-all shadow-lg">
+                            <RotateCcw className="h-8 w-8" />
+                        </button>
+                    </div>
+                    <div className="w-96">
+                        {( (mode === 'custom' && customData?.companero && customData.companero !== 'Participante 2') || (mode !== 'custom' && selectedProject?.companero) ) ? (
+                            <div className="bg-white/10 border border-white/20 rounded-2xl p-4 shadow-lg shadow-purple-900/40 text-left">
+                                <p className="text-xs uppercase tracking-wide text-purple-200">Compañero</p>
+                                <p className="text-xl font-semibold text-white mt-1 break-words">{mode === "custom" ? customData?.companero : selectedProject?.companero}</p>
+                                <p className="text-sm text-purple-100 mt-1">{mode === "custom" ? customData?.noControlCompanero : selectedProject?.noControlCompanero}</p>
+                            </div>
+                        ) : <div></div>}
+                    </div>
                 </div>
 
                 {currentPhase !== 'idle' && currentPhase !== 'finished' && (
