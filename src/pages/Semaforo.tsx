@@ -335,23 +335,23 @@ const Semaforo = () => {
                     </div>
                 )}
 
-                <div className="flex flex-col items-center gap-5">
+                <div className="flex flex-col items-center gap-3">
                     <div className="relative">
-                        <div className={`w-72 h-72 sm:w-80 sm:h-80 rounded-full border-8 border-white/10 transition-all duration-500 ${circleColorClass}`}></div>
-                        <div className="absolute top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-semibold tracking-[0.5em] uppercase text-white bg-black/60 border border-white/30">
+                        <div className={`w-[450px] h-[450px] sm:w-[500px] sm:h-[500px] rounded-full border-8 border-white/10 transition-all duration-500 ${circleColorClass}`}></div>
+                        <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-semibold tracking-[0.5em] uppercase text-white bg-black/60 border border-white/30">
                             {phaseBadgeLabel}
                         </div>
                     </div>
-                    <div className="w-full max-w-xs">
-                        <div className="bg-black/70 border border-white/20 rounded-2xl px-8 py-6 shadow-2xl shadow-black/60">
-                            <p className="text-6xl sm:text-7xl font-mono font-bold tracking-tight text-white">
+                    <div className="w-full max-w-min">
+                        <div className="bg-black/70 border border-white/20 rounded-2xl px-6 py-4 shadow-2xl shadow-black/60">
+                            <p className="text-5xl sm:text-6xl font-mono font-bold tracking-tight text-white">
                                 {formatTime(timeRemaining)}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="w-full flex items-center justify-around gap-4 mt-6">
+                <div className="w-full flex items-center justify-around gap-4 mt-4">
                     <div className="w-96">
                         {(selectedProject || customData) &&
                             <div className="bg-white/10 border border-white/20 rounded-2xl p-4 shadow-lg shadow-cyan-900/40 text-left">
