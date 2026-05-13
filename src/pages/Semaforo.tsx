@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router";
-import { ArrowLeft, Play, Pause, RotateCcw, X } from "lucide-react";
+import { ArrowLeft, Play, Pause, RotateCcw, X, ChevronsRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { proyectosAPI } from "../backend/api/proyectos";
 import type { ProyectoConAsesores } from "../backend/schemas";
@@ -141,6 +141,9 @@ const Semaforo = () => {
 
     const circleColorClass = circleColorClasses[lightColor];
 
+    const canJumpToQuestions = (selectedProject || customData)
+        && (currentPhase === 'green' || currentPhase === 'yellow' || currentPhase === 'red');
+
     const playSound = (type: 'change' | 'finish') => {
         try {
             const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -215,6 +218,16 @@ const Semaforo = () => {
         setIsRunning(false);
         setCurrentPhase('idle');
         setTimeRemaining(0);
+    };
+
+    const jumpToQuestions = () => {
+        if (!selectedProject && !customData) {
+            return;
+        }
+
+        setCurrentPhase('aviso');
+        setTimeRemaining(10);
+        setIsRunning(true);
     };
 
     // Función para formatear tiempo MM:SS
@@ -370,6 +383,14 @@ const Semaforo = () => {
                         >
                             {isRunning ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
                             {isRunning ? 'Pausar' : 'Iniciar'}
+                        </button>
+                        <button
+                            onClick={jumpToQuestions}
+                            className={`px-6 py-4 rounded-full font-bold text-lg transition-all shadow-lg flex items-center gap-2 bg-cyan-500 hover:bg-cyan-600 ${!canJumpToQuestions ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={!canJumpToQuestions}
+                        >
+                            <ChevronsRight className="h-6 w-6" />
+                            Ir a preguntas
                         </button>
                         <button onClick={restartTimer} className="p-5 rounded-full bg-red-500 hover:bg-red-600 transition-all shadow-lg">
                             <RotateCcw className="h-8 w-8" />
